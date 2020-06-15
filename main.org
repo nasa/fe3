@@ -1,0 +1,39 @@
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href=""/>
+
+
+
+
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/setup/theme-readtheorg.setup
+#+HTML_HEAD: <style> #content{max-width:1800px;}</style>
+#+OPTIONS: ^:nil
+#+HTML_MATHJAX: align: left indent: 5em tagside: left font: Neo-Euler
+#+HTML_MATHJAX: cancel.js noErrors.js
+
+
+#+TITLE: Fe3 API and Data Models
+#+AUTHOR: Abraham K. Ishihara
+#+DATE: 2020-06-15
+#+OPTIONS: creator:nil
+
+* Introduction
+  This document describes the API specification and implementation *release schedule* for Fe3 simulator.  It will be updated frequently.  The specification  and associated data models are described using OpenAPI Specification (OAS) 3.0 (=https://github.com/OAI/OpenAPI-Specification=) and can be found in the GIT repository located at
+  #+BEGIN_SRC 
+  https://github.com/nasa/fe3
+  #+END_SRC
+  The Fe3 simulation engine is high-fidelity simulator that incorporates 6DOF vehicle dynamics, navigation, control, communication, and spatially and temporally varying three dimensional wind fields. 
+It is capable of simulating 1000s of multi-vehicle operations in seconds by leveraging an auto-scaling cluster of P3 GPU instances on AWS. 
+
+* API and Data Model Specification Release Schedule
+  The GIT repository for the Fe3 API and data models is used by nasa and external partners.
+  The master branch will be tagged with a version identifier of the form vx.y.z.  Twenty four hours prior to a change, we will announce that a change is forthcoming.  We will identify the new tag and the release branch that contains the intended changes.  During this time, developers can inspect the release branch and assess the impact to their code/build cycles.  If it is determined that the change will have an adverse impact, developers can point their code to the current (stable) GIT tag idenfitier.  Our GIT branching model for both specification and code generally follows the one outlined here: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
+
+
+  | Date Announced   | Review-Branch  | Date Implemented | Tag on Master | Desc            |
+  |------------------+----------------+------------------+---------------+-----------------|
+  | <2020-06-15 Mon> | release-v1.0.1 | <2020-06-29 Mon> | v1.0.1        | Initial Release |
+
+* API Release Schedule
+  This schedule is intended to convey to Fe3 participants when NASA servers will support the various end-points described in the OpenAPI specification.  It is to be assumed that the endpoints, when released, will support the latest tag on the master branch.    
+  | Endpoint | Location | Sprint           | Release Date     |
+  |----------+----------+------------------+------------------|
+  | tbd      | tbd      | <2020-06-15 Mon> | <2020-07-13 Mon> |
