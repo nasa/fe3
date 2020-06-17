@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-16 Tue 20:32 -->
+<!-- 2020-06-16 Tue 21:02 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Fe3 API and Data Models</title>
@@ -247,6 +247,28 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="content">
@@ -255,15 +277,21 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgd319128">1. Introduction</a></li>
-<li><a href="#org48be8d0">2. API and Data Model Specification Release Schedule</a></li>
-<li><a href="#orgfce9326">3. API Release Schedule</a></li>
+<li><a href="#org6bdebfc">1. Introduction</a></li>
+<li><a href="#org8e4ab1b">2. API and Data Model Specification Release Schedule</a></li>
+<li><a href="#org562ee6e">3. API Release Schedule</a></li>
+<li><a href="#org4958bf0">4. Fe3 Modeling and Simulation</a>
+<ul>
+<li><a href="#org1d37886">4.1. Introduction</a></li>
+<li><a href="#org26d1751">4.2. Dynamics</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgd319128" class="outline-2">
-<h2 id="orgd319128"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org6bdebfc" class="outline-2">
+<h2 id="org6bdebfc"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This document describes the API specification and implementation <b>release schedule</b> for Fe3 simulator.  It will be updated frequently.  The specification  and associated data models are described using OpenAPI Specification (OAS) 3.0 (<code>https://github.com/OAI/OpenAPI-Specification</code>) and can be found in the GIT repository located at
@@ -277,7 +305,7 @@ It is capable of simulating 1000s of multi-vehicle operations in seconds by leve
 </p>
 
 
-<div id="org9481093" class="figure">
+<div id="org30de2f3" class="figure">
 <p><img src="./fidelity.png" alt="fidelity.png" />
 </p>
 <p><span class="figure-number">Figure 1: </span>The simulation models that are used in Fe3 are 6DOF models that incorporate Eulerian and aerodynamic moments and forces.  In addition, in some vehicles, battery and motor dynamics are also modeled.  This figure depicts where the models lie along the fidelity spectrum and how the use of an auto-scaling GPU cluster can push the curve to the upper right reducing simulation time.</p>
@@ -285,8 +313,10 @@ It is capable of simulating 1000s of multi-vehicle operations in seconds by leve
 </div>
 </div>
 
-<div id="outline-container-org48be8d0" class="outline-2">
-<h2 id="org48be8d0"><span class="section-number-2">2</span> API and Data Model Specification Release Schedule</h2>
+
+
+<div id="outline-container-org8e4ab1b" class="outline-2">
+<h2 id="org8e4ab1b"><span class="section-number-2">2</span> API and Data Model Specification Release Schedule</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 The GIT repository for the Fe3 API and data models is used by nasa and external partners.
@@ -330,8 +360,8 @@ The master branch will be tagged with a version identifier of the form vx.y.z.  
 </div>
 </div>
 
-<div id="outline-container-orgfce9326" class="outline-2">
-<h2 id="orgfce9326"><span class="section-number-2">3</span> API Release Schedule</h2>
+<div id="outline-container-org562ee6e" class="outline-2">
+<h2 id="org562ee6e"><span class="section-number-2">3</span> API Release Schedule</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 This schedule is intended to convey to Fe3 participants when NASA servers will support the various end-points described in the OpenAPI specification.  It is to be assumed that the endpoints, when released, will support the latest tag on the master branch.    
@@ -367,11 +397,39 @@ This schedule is intended to convey to Fe3 participants when NASA servers will s
 </table>
 </div>
 </div>
+<div id="outline-container-org4958bf0" class="outline-2">
+<h2 id="org4958bf0"><span class="section-number-2">4</span> Fe3 Modeling and Simulation</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org1d37886" class="outline-3">
+<h3 id="org1d37886"><span class="section-number-3">4.1</span> Introduction</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+We are at the cusp of an aviation revolution whereby flying cyber-physical systems will disrupt and transform entire industries.  The convergence of new technologies including electric propulsion and autonomy together with new business models is generating the potential for a new aviation market known as Urban Air Mobility (UAM). 
+This transformation aims to radically redefine how and where value is created and disseminated. 
+</p>
+
+<p>
+UAM is a safe and efficient system for air passenger and cargo transportation within an urban area, inclusive of small package delivery and other urban Unmanned Aerial Systems (UAS) services, that supports a mix of onboard/ground-piloted and increasingly autonomous operations.
+UAM is poised to spawn a new vertical mobility ecosystem driven by emerging markets centered around intra and inter-city passenger transportation, inspection, and package delivery. 
+Building on previous work in UAS Traffic Management (UTM at <a href="https://utm.arc.nasa.gov/index.shtml">https://utm.arc.nasa.gov/index.shtml</a>) in partnership with the FAA, NASA aims to develop a research platform to investigate all aspects critical to enable safe and efficient operations.  The core purpose of the \(\mbox{Fe}^3\) simulation engine is to enable a computationally efficient approach to address these questions.  
+</p>
+</div>
+</div>
+<div id="outline-container-org26d1751" class="outline-3">
+<h3 id="org26d1751"><span class="section-number-3">4.2</span> Dynamics</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+In this section, we summarize the models  we will be using.
+</p>
+</div>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
 <p class="date">Date: 2020-06-15</p>
 <p class="author">Author: Abraham K. Ishihara</p>
-<p class="date">Created: 2020-06-16 Tue 20:32</p>
+<p class="date">Created: 2020-06-16 Tue 21:02</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
