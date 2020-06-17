@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2020-06-15 Mon 16:20 -->
+<!-- 2020-06-16 Tue 20:32 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Fe3 API and Data Models</title>
@@ -255,15 +255,15 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org7a12596">1. Introduction</a></li>
-<li><a href="#org4705d11">2. API and Data Model Specification Release Schedule</a></li>
-<li><a href="#orgf7a0eea">3. API Release Schedule</a></li>
+<li><a href="#orgd319128">1. Introduction</a></li>
+<li><a href="#org48be8d0">2. API and Data Model Specification Release Schedule</a></li>
+<li><a href="#orgfce9326">3. API Release Schedule</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org7a12596" class="outline-2">
-<h2 id="org7a12596"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgd319128" class="outline-2">
+<h2 id="orgd319128"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This document describes the API specification and implementation <b>release schedule</b> for Fe3 simulator.  It will be updated frequently.  The specification  and associated data models are described using OpenAPI Specification (OAS) 3.0 (<code>https://github.com/OAI/OpenAPI-Specification</code>) and can be found in the GIT repository located at
@@ -272,14 +272,21 @@ This document describes the API specification and implementation <b>release sche
 https://github.com/nasa/fe3
 </pre>
 <p>
-  The Fe3 simulatio engine is high-fidelity simulator that incorporates 6DOF vehicle dynamics, navigation, control, communication, and spatially and temporally varying three dimensional wind fields. 
+  The Fe3 simulation engine is high-fidelity simulator that incorporates 6DOF vehicle dynamics, navigation, control, communication, and spatially and temporally varying three dimensional wind fields. 
 It is capable of simulating 1000s of multi-vehicle operations in seconds by leveraging an auto-scaling cluster of P3 GPU instances on AWS. 
 </p>
+
+
+<div id="org9481093" class="figure">
+<p><img src="./fidelity.png" alt="fidelity.png" />
+</p>
+<p><span class="figure-number">Figure 1: </span>The simulation models that are used in Fe3 are 6DOF models that incorporate Eulerian and aerodynamic moments and forces.  In addition, in some vehicles, battery and motor dynamics are also modeled.  This figure depicts where the models lie along the fidelity spectrum and how the use of an auto-scaling GPU cluster can push the curve to the upper right reducing simulation time.</p>
+</div>
 </div>
 </div>
 
-<div id="outline-container-org4705d11" class="outline-2">
-<h2 id="org4705d11"><span class="section-number-2">2</span> API and Data Model Specification Release Schedule</h2>
+<div id="outline-container-org48be8d0" class="outline-2">
+<h2 id="org48be8d0"><span class="section-number-2">2</span> API and Data Model Specification Release Schedule</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 The GIT repository for the Fe3 API and data models is used by nasa and external partners.
@@ -323,8 +330,8 @@ The master branch will be tagged with a version identifier of the form vx.y.z.  
 </div>
 </div>
 
-<div id="outline-container-orgf7a0eea" class="outline-2">
-<h2 id="orgf7a0eea"><span class="section-number-2">3</span> API Release Schedule</h2>
+<div id="outline-container-orgfce9326" class="outline-2">
+<h2 id="orgfce9326"><span class="section-number-2">3</span> API Release Schedule</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 This schedule is intended to convey to Fe3 participants when NASA servers will support the various end-points described in the OpenAPI specification.  It is to be assumed that the endpoints, when released, will support the latest tag on the master branch.    
@@ -364,7 +371,7 @@ This schedule is intended to convey to Fe3 participants when NASA servers will s
 <div id="postamble" class="status">
 <p class="date">Date: 2020-06-15</p>
 <p class="author">Author: Abraham K. Ishihara</p>
-<p class="date">Created: 2020-06-15 Mon 16:20</p>
+<p class="date">Created: 2020-06-16 Tue 20:32</p>
 <p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

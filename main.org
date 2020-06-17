@@ -23,6 +23,10 @@
   The Fe3 simulation engine is high-fidelity simulator that incorporates 6DOF vehicle dynamics, navigation, control, communication, and spatially and temporally varying three dimensional wind fields. 
 It is capable of simulating 1000s of multi-vehicle operations in seconds by leveraging an auto-scaling cluster of P3 GPU instances on AWS. 
 
+  #+CAPTION: The simulation models that are used in Fe3 are 6DOF models that incorporate Eulerian and aerodynamic moments and forces.  In addition, in some vehicles, battery and motor dynamics are also modeled.  This figure depicts where the models lie along the fidelity spectrum and how the use of an auto-scaling GPU cluster can push the curve to the upper right reducing simulation time.  
+  #+NAME:   fig:SED-HR4049
+  [[./fidelity.png]]
+
 * API and Data Model Specification Release Schedule
   The GIT repository for the Fe3 API and data models is used by nasa and external partners.
   The master branch will be tagged with a version identifier of the form vx.y.z.  Twenty four hours prior to a change, we will announce that a change is forthcoming.  We will identify the new tag and the release branch that contains the intended changes.  During this time, developers can inspect the release branch and assess the impact to their code/build cycles.  If it is determined that the change will have an adverse impact, developers can point their code to the current (stable) GIT tag idenfitier.  Our GIT branching model for both specification and code generally follows the one outlined here: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
