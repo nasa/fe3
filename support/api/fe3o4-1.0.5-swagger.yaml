@@ -1,0 +1,643 @@
+swagger: '2.0'
+info:
+  description: simple API for fastsim/fe3
+  version: "1.0.5"
+  title: hasty fastim api
+  contact:
+    email: daniel.l.liddell@nasa.gov
+
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+paths:
+  /inventory:
+    get:
+      summary: provides list of simulations and their status
+      operationId: listInventory
+      description: All of the current simuations are returned, by UUID, along with their status
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: particularSimulation
+        description: Narrows the simulation status returned to that of a single simulation
+        required: false
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: UUID was found and status returned
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/InventoryList'
+        400:
+          description: bad input parameter
+        401:
+          description: unauthorized
+        404:
+          description: simulation not found
+  /inventory/completed/:
+    get:
+      summary: provides list of completed simulations only
+      operationId: listInventoryCompleted
+      description: All of the current completed simulations are returned, by UUID, along with their completed status (error, completed, cancelled)
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Completed, errored or cancelled simids were found and returned
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/InventoryList'
+        400:
+          description: bad input parameter
+        401:
+          description: unauthorized
+  /{simId}:
+    delete:
+      summary: delete job from queue and its results
+      operationId: deleteSimulation
+      description: deletes a submission and its results
+      parameters:
+        - in: path
+          name: simId
+          required: true
+          type: string
+          format: uuid
+      responses:
+        201:
+          description: request deleted
+        400:
+          description: request format invalid
+        403:
+          description: requested simulation not owned
+  /request:
+    post:
+      summary: request simulation
+      operationId: requestSimulation
+      description: submits a request for simulation
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: simulationRequest
+        description: Inventory item to add
+        schema:
+          $ref: '#/definitions/SimulationRequest'
+      responses:
+        201:
+          description: request submitted
+        400:
+          description: request format invalid
+        409:
+          description: request already present
+        422:
+          description: request not submitted due to error
+        500:
+          description: internal server state error
+  /results:
+    get:
+      summary: provides trajectory results from simulation
+      operationId: getTrajectory
+      description: get the trajectory results for a completed simulation
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: id
+        description: the UUID of the desired simulation
+        required: false
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: simulation for UUID was found and data returned
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Positions'
+        400:
+          description: bad input parameter
+        404:
+          description: simulation not found or not completed
+definitions:
+  InventoryList:
+    type: array
+    items:
+      $ref: '#/definitions/InventoryItem'
+      
+    example:
+      InventoryList:
+        - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          status: pending
+        - id: 8fa85f64-5717-4562-b3fc-2c963f66afa7
+          status: completed
+    
+  InventoryItem:
+    type: object
+    required: [id, status]
+    properties:
+      id:
+        type: string
+        format: uuid
+      status:
+        type: string
+        enum: [pending,preparing,simulating,finishing,done,downloaded,error]
+      info:
+        type: string
+
+  SimulationRequest:
+    type: array
+    items:
+      $ref: '#/definitions/SimulationInput'
+      
+  SimulationInput:
+    type: object
+    required: [type, features]
+    properties:
+      'type':
+        type: string
+        enum: [FeatureCollection]
+      'features':
+        $ref: '#/definitions/SimulationSpec'
+        
+  SimulationSpec:
+    type: object
+    required: [id,type,geometry,properties]
+    properties:
+      'id':
+        type: string
+        format: uuid
+      'type':
+        type: string
+        enum: [Feature]
+      'geometry':
+        $ref: '#/definitions/Geometry'
+      'properties':
+        $ref: '#/definitions/SimulationProperties'
+        
+  Geometry:
+    type: object
+    required: [type, coordinates]
+    properties:
+      'type':
+        type: string
+        enum: [LineString]
+      'coordinates':
+        $ref: '#/definitions/Coordinates'
+        
+  Coordinates:
+    type: array
+    items:
+      $ref: '#/definitions/Wayarray'
+    
+  Waypoints:
+    type: object
+    required: [lon,lat,alt,time]
+    properties:
+      'lon':
+        type: number
+      'lat':
+        type: number
+      'alt':
+        type: number
+      'time':
+        type: string
+        format: date-time
+        
+  Wayarray:
+    type: array
+    items:
+      type: string
+    minItems: 4
+    maxItems: 4
+        
+  SimulationProperties:
+    type: object
+    required: ['coordinateType','departureTime','vehicleType']
+    properties:
+      'coordinateType':
+        type: string
+        enum: [Cartesian,wgs84]
+      'departureTime':
+        type: string
+        format: date-time
+      'vehicleType':
+        type: string
+        enum: [QuadRotorBasic]
+        
+  Trajectory:
+    type: object
+    required: [id,type,trajectory]
+    properties:
+      'id':
+        type: string
+        format: uuid
+      'type':
+        type: string
+        enum: [trajectory]
+      'trajectory':
+        type: array
+        items:
+          $ref: '#/definitions/Waypoints'
+    example:
+      id: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+      type: 'trajectory'
+      trajectory: 
+        - lon: '10'
+          lat: '20'
+          alt: '30'
+          time: '2019-02-04T23:02:21Z'
+        - lon: '40'
+          lat: '50'
+          alt: '60'
+          time: '2019-02-04T23:03:21Z'
+          
+  PositionEntry:
+    type: object
+    required: 
+      - air_speed_source
+      - altitude_gps_wgs84_ft
+      - gufi
+      - lat
+      - lon
+      - time_measured
+    properties:
+      'air_speed_source':
+        type: string
+        enum: [Sim]
+      'altitude_gps_wgs84_ft':
+        type: number
+      'gufi':
+        type: string
+        format: uuid
+      'lat':
+        type: number
+      'lon':
+        type: number
+      'time_measured':
+        type: string
+        format: date-time
+        
+  Positions:
+    type: object
+    properties:
+      positions:
+        type: array
+        items:
+          $ref: '#/definitions/PositionEntry'
+        
+    example:
+      positions:
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268920416667
+        lon: -97.519215
+        time_measured: '2018-09-28T21:56:49.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268918
+        lon: -97.519211
+        time_measured: '2018-09-28T21:56:50.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268916183486
+        lon: -97.5192102553099
+        time_measured: '2018-09-28T21:56:51.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268877858236
+        lon: -97.5191952419849
+        time_measured: '2018-09-28T21:56:53.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.926880128907
+        lon: -97.5191652472222
+        time_measured: '2018-09-28T21:56:54.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268690157364
+        lon: -97.519121713193
+        time_measured: '2018-09-28T21:56:55.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268612479447
+        lon: -97.5190912841836
+        time_measured: '2018-09-28T21:56:57.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268495879808
+        lon: -97.5190456083171
+        time_measured: '2018-09-28T21:56:58.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268379362653
+        lon: -97.5189999648445
+        time_measured: '2018-09-28T21:57:00.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268262762709
+        lon: -97.5189542890234
+        time_measured: '2018-09-28T21:57:01.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.926814624525
+        lon: -97.5189086455962
+        time_measured: '2018-09-28T21:57:02.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9268029645
+        lon: -97.5188629698204
+        time_measured: '2018-09-28T21:57:04.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267913127236
+        lon: -97.5188173264386
+        time_measured: '2018-09-28T21:57:05.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267796526681
+        lon: -97.5187716507083
+        time_measured: '2018-09-28T21:57:06.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267718847985
+        lon: -97.5187412218148
+        time_measured: '2018-09-28T21:57:08.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267602247176
+        lon: -97.5186955461224
+        time_measured: '2018-09-28T21:57:09.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267485646215
+        lon: -97.5186498704526
+        time_measured: '2018-09-28T21:57:10.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267369127738
+        lon: -97.5186042271767
+        time_measured: '2018-09-28T21:57:12.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267252609109
+        lon: -97.5185585839234
+        time_measured: '2018-09-28T21:57:13.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267136090328
+        lon: -97.5185129406928
+        time_measured: '2018-09-28T21:57:14.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9267058328418
+        lon: -97.5184824795139
+        time_measured: '2018-09-28T21:57:16.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266941809382
+        lon: -97.5184368363212
+        time_measured: '2018-09-28T21:57:17.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266825124918
+        lon: -97.518391128409
+        time_measured: '2018-09-28T21:57:18.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266708605577
+        lon: -97.5183454852616
+        time_measured: '2018-09-28T21:57:20.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266592086084
+        lon: -97.5182998421369
+        time_measured: '2018-09-28T21:57:21.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266475566438
+        lon: -97.5182541990349
+        time_measured: '2018-09-28T21:57:23.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.926635904664
+        lon: -97.5182085559556
+        time_measured: '2018-09-28T21:57:24.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266242444052
+        lon: -97.518162880528
+        time_measured: '2018-09-28T21:57:25.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266124849649
+        lon: -97.5181168166718
+        time_measured: '2018-09-28T21:57:27.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9266008164115
+        lon: -97.5180711089189
+        time_measured: '2018-09-28T21:57:28.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265891643706
+        lon: -97.5180254659305
+        time_measured: '2018-09-28T21:57:30.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265731489873
+        lon: -97.5179627311367
+        time_measured: '2018-09-28T21:57:31.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.92656075316
+        lon: -97.5179141748242
+        time_measured: '2018-09-28T21:57:32.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265500100958
+        lon: -97.5178720927074
+        time_measured: '2018-09-28T21:57:34.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265376142364
+        lon: -97.5178235364428
+        time_measured: '2018-09-28T21:57:35.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265268711442
+        lon: -97.5177814543676
+        time_measured: '2018-09-28T21:57:37.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265144669887
+        lon: -97.51773286578
+        time_measured: '2018-09-28T21:57:38.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265012701958
+        lon: -97.5176800586848
+        time_measured: '2018-09-28T21:57:40.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9264894718594
+        lon: -97.5176337523347
+        time_measured: '2018-09-28T21:57:41.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.926460948404
+        lon: -97.5175218032485
+        time_measured: '2018-09-28T21:57:43.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9264110161718
+        lon: -97.5173258300189
+        time_measured: '2018-09-28T21:57:44.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9263542931143
+        lon: -97.5171032061121
+        time_measured: '2018-09-28T21:57:45.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.926297569694
+        lon: -97.5168805827442
+        time_measured: '2018-09-28T21:57:47.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9262408053936
+        lon: -97.5166578008989
+        time_measured: '2018-09-28T21:57:48.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9261799079564
+        lon: -97.5164187999904
+        time_measured: '2018-09-28T21:57:50.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9261482954122
+        lon: -97.5162072406071
+        time_measured: '2018-09-28T21:57:51.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9262261091101
+        lon: -97.5160219061551
+        time_measured: '2018-09-28T21:57:52.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9263029958919
+        lon: -97.515851271447
+        time_measured: '2018-09-28T21:57:54.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9263387661101
+        lon: -97.5157718862845
+        time_measured: '2018-09-28T21:57:55.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9263718630525
+        lon: -97.5156984337341
+        time_measured: '2018-09-28T21:57:56.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9264049853992
+        lon: -97.5156249245989
+        time_measured: '2018-09-28T21:57:58.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9264380822318
+        lon: -97.515551471883
+        time_measured: '2018-09-28T21:57:59.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9264711790096
+        lon: -97.5154780190845
+        time_measured: '2018-09-28T21:58:00.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.926506821632
+        lon: -97.5153989159783
+        time_measured: '2018-09-28T21:58:02.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265399182959
+        lon: -97.5153254630081
+        time_measured: '2018-09-28T21:58:03.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265725057281
+        lon: -97.5152531399997
+        time_measured: '2018-09-28T21:58:04.000Z'
+      - air_speed_source: 'Sim'
+        altitude_gps_wgs84_ft: 1221
+        gufi: '499bcddc-8ca5-4882-80f4-4f809f9c00cf'
+        lat: 47.9265806525846
+        lon: -97.51523505922
+        time_measured: '2018-09-28T21:58:06.000Z'
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /seachanged/fe3o4/1.0.3
+schemes:
+ - https
